@@ -3,7 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"fmt"
-	"github.com/majestrate/fedproxy/internal/socks5"
+	"github.com/karlprieb/fedproxy/internal/socks5"
 	"golang.org/x/net/proxy"
 	"io"
 	"net"
@@ -42,7 +42,10 @@ func (h *httpProxyHandler) dialOut(addr string) (net.Conn, error) {
 	if strings.HasSuffix(host, ".i2p") {
 		return h.i2p.Dial("tcp", addr)
 	}
-	return h.onion.Dial("tcp", addr)
+	if strings.HasSuffix(host, ".onion") {
+    return h.onion.Dial("tcp", addr)
+	}
+  return net.Dial("tcp", addr)
 }
 
 func (h *httpProxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -124,7 +127,10 @@ func main() {
 				if strings.HasSuffix(host, ".i2p") {
 					return i2psock.Dial("tcp", addr)
 				}
-				return onionsock.Dial("tcp", addr)
+				if strings.HasSuffix(host, ".onion") {
+          return onionsock.Dial("tcp", addr)
+        }
+        return net.Dial("tcp", addr)
 			},
 		})
 
